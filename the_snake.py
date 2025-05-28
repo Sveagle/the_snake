@@ -47,9 +47,8 @@ class Apple(GameObject):
     @staticmethod
     def randomize_position():
         """Случайным образом определяет позицию яблока."""
-        position = (randint(0, GRID_WIDTH - 1) * GRID_SIZE,
-                    randint(0, GRID_HEIGHT - 1) * GRID_SIZE)
-        return position
+        return (randint(0, GRID_WIDTH - 1) * GRID_SIZE,
+                randint(0, GRID_HEIGHT - 1) * GRID_SIZE)
 
     def __init__(self):
         super().__init__()
