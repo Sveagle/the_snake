@@ -57,10 +57,11 @@ class Apple(GameObject):
 
     Атрибуты:
         position (tuple[int, int]): Координаты (x, y) на игровом поле
-        color (str): Цвет яблока (по умолчанию 'RED').
+        body_color (str): Цвет яблока (по умолчанию 'RED')
+        occupied_postions (tuple[int, int]): Занятые позиции на поле.
     """
 
-    def __init__(self, body_color=RED, positions=None):
+    def __init__(self, body_color=RED, positions=CENTER_POSTITON):
         super().__init__()
         self.occupied_positions = positions
         self.randomize_position()
@@ -69,10 +70,11 @@ class Apple(GameObject):
     def randomize_position(self):
         """Случайным образом определяет позицию яблока."""
         while True:
-            self.position = (randint(0, GRID_WIDTH - 1) * GRID_SIZE,
-                             randint(0, GRID_HEIGHT - 1) * GRID_SIZE)
-            if self.position not in self.occupied_positions:
-                return self.position
+            new_position = (randint(0, GRID_WIDTH - 1) * GRID_SIZE,
+                            randint(0, GRID_HEIGHT - 1) * GRID_SIZE)
+            if new_position not in self.occupied_positions:
+                self.position = new_position
+                break
 
     def draw(self):
         """Отрисовка яблока."""
