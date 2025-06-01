@@ -2,11 +2,10 @@
 random, также модуль pygame, как отвечающий за графический интерфейс программы.
 """
 
+import sys
 from random import choice, randint
 
 import pygame as pg
-
-import sys
 
 SCREEN_WIDTH, SCREEN_HEIGHT = 640, 480
 GRID_SIZE = 20
