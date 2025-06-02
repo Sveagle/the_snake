@@ -89,8 +89,10 @@ class Apple(GameObject):
         super().__init__(body_color=APPLE_COLOR)
         self.randomize_position()
 
-    def randomize_position(self, occupied_positions=set()):
+    def randomize_position(self, occupied_positions=None):
         """Случайным образом определяет позицию яблока."""
+        if occupied_positions is None:
+            occupied_positions = set()
         while True:
             self.position = (randint(0, GRID_WIDTH - 1) * GRID_SIZE,
                              randint(0, GRID_HEIGHT - 1) * GRID_SIZE)
