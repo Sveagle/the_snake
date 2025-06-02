@@ -114,7 +114,7 @@ class Snake(GameObject):
     - проверку столкновений с границами и самой собой
     """
 
-    def __init__(self, body_color):
+    def __init__(self, body_color=SNAKE_COLOR):
         super().__init__(body_color=body_color)
         self.reset()
 
