@@ -77,7 +77,7 @@ class Apple(GameObject):
         occupied_postions (tuple[int, int]): Занятые позиции на поле.
     """
 
-    def __init__(self):
+    def __init__(self, body_color=APPLE_COLOR, positions=None):
         """Инициализирует объект яблока.
 
         Args:
@@ -86,8 +86,8 @@ class Apple(GameObject):
             color (tuple, optional): Цвет яблока.
                 По умолчанию APPLE_COLOR (красный).
         """
-        super().__init__(body_color=APPLE_COLOR)
-        self.randomize_position()
+        super().__init__(body_color=body_color)
+        self.randomize_position(positions)
 
     def randomize_position(self, occupied_positions=None):
         """Случайным образом определяет позицию яблока."""
@@ -101,8 +101,8 @@ class Apple(GameObject):
 
     def draw(self):
         """Отрисовка яблока."""
-        return super().make_rect(position=self.position,
-                                 body_color=self.body_color)
+        self.make_rect(position=self.position,
+                       body_color=self.body_color)
 
 
 class Snake(GameObject):
@@ -114,8 +114,8 @@ class Snake(GameObject):
     - проверку столкновений с границами и самой собой
     """
 
-    def __init__(self):
-        super().__init__(body_color=SNAKE_COLOR)
+    def __init__(self, body_color):
+        super().__init__(body_color=body_color)
         self.reset()
 
     def update_direction(self, direction):
@@ -145,7 +145,7 @@ class Snake(GameObject):
 
     def draw(self):
         """Отрисовка змейки."""
-        super().make_rect(self.get_head_position(), self.body_color)
+        self.make_rect(self.get_head_position(), self.body_color)
         if self.last:
             last_rect = pg.Rect(self.last, (GRID_SIZE, GRID_SIZE))
             pg.draw.rect(screen, BOARD_BACKGROUND_COLOR, last_rect)
@@ -192,8 +192,8 @@ def main():
     описанные функции и классы в единую логику.
     """
     pg.init()
-    snake = Snake()
-    apple = Apple()
+    snake = Snake(body_color=SNAKE_COLOR)
+    apple = Apple(body_color=APPLE_COLOR, positions=snake.positions)
 
     while True:
         clock.tick(SPEED)
