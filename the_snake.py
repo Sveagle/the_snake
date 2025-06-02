@@ -192,8 +192,8 @@ def main():
     описанные функции и классы в единую логику.
     """
     pg.init()
-    snake = Snake(body_color=SNAKE_COLOR)
-    apple = Apple(body_color=APPLE_COLOR, positions=snake.positions)
+    snake = Snake()
+    apple = Apple(positions=snake.positions)
 
     while True:
         clock.tick(SPEED)
