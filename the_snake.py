@@ -33,6 +33,7 @@ BLACK = (0, 0, 0)
 CYAN = (93, 216, 228)
 GRAY = (105, 105, 105)
 SLATEGRAY = (112, 128, 144)
+WHITE = (255, 255, 255)
 BOARD_BACKGROUND_COLOR = BLACK
 BORDER_COLOR = CYAN
 APPLE_COLOR = RED
@@ -52,6 +53,15 @@ def draw_grid(border=SLATEGRAY):
     for y in range(0, screen.get_height(), GRID_SIZE):
         pg.draw.line(screen, border, (0, y), (screen.get_width(), y))
 
+
+def draw_text(length):
+    """Отрисовка текста."""
+    font = pg.font.SysFont('Arial', 20)
+    text_surface = font.render(f'Счет: {length}', True, WHITE)
+    text_bg = pg.Surface((75, 25), pg.SRCALPHA)
+    text_bg.fill((0, 0, 0, 128))
+    text_bg.blit(text_surface, (5, 5))
+    screen.blit(text_bg, (10, 10))
 
 class GameObject:
     """Родительский класс, определяющий основные характеристики объектов."""
@@ -246,6 +256,7 @@ def main():
         stone.draw()
         snake.draw()
         draw_grid()
+        draw_text(snake.length)
         pg.display.update()
 
 
