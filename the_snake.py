@@ -31,6 +31,8 @@ GREEN = (0, 255, 0)
 BLUE = (0, 0, 255)
 BLACK = (0, 0, 0)
 CYAN = (93, 216, 228)
+GRAY = (105, 105, 105)
+SLATEGRAY = (112, 128, 144)
 BOARD_BACKGROUND_COLOR = BLACK
 BORDER_COLOR = CYAN
 APPLE_COLOR = RED
@@ -43,6 +45,14 @@ pg.display.set_caption('Змейка')
 clock = pg.time.Clock()
 
 
+def draw_grid(border=SLATEGRAY):
+    """Отрисовка сетки в игре."""
+    for x in range(0, screen.get_width(), GRID_SIZE):
+        pg.draw.line(screen, border, (x, 0), (x, screen.get_height()))
+    for y in range(0, screen.get_height(), GRID_SIZE):
+        pg.draw.line(screen, border, (0, y), (screen.get_width(), y))
+
+
 class GameObject:
     """Родительский класс, определяющий основные характеристики объектов."""
 
@@ -51,17 +61,28 @@ class GameObject:
         self.position = position
         self.body_color = body_color
 
+    def randomize_position(self, occupied_positions=None):
+        """Случайным образом определяет позицию объекта."""
+        if occupied_positions is None:
+            occupied_positions = set()
+        while True:
+            self.position = (randint(0, GRID_WIDTH - 1) * GRID_SIZE,
+                             randint(0, GRID_HEIGHT - 1) * GRID_SIZE)
+            if self.position not in occupied_positions:
+                break
+        return self.position
+
     def draw(self) -> None:
         """Отрисовка объекта. Должен быть переопределён в дочерних классах."""
         raise NotImplementedError(
             f"Метод 'draw' не реализован в классе {self.__class__.__name__}!"
         )
 
-    def make_rect(self, position, body_color):
+    def make_rect(self, position, body_color, border=SLATEGRAY):
         """Создает квадрат для отрисовки."""
         rect = (pg.Rect(position, (GRID_SIZE, GRID_SIZE)))
         pg.draw.rect(screen, body_color, rect)
-        pg.draw.rect(screen, BORDER_COLOR, rect, 1)
+        pg.draw.rect(screen, border, rect, 1)
 
 
 class Apple(GameObject):
@@ -87,22 +108,36 @@ class Apple(GameObject):
                 По умолчанию APPLE_COLOR (красный).
         """
         super().__init__(body_color=body_color)
-        self.randomize_position(positions)
-
-    def randomize_position(self, occupied_positions=None):
-        """Случайным образом определяет позицию яблока."""
-        if occupied_positions is None:
-            occupied_positions = set()
-        while True:
-            self.position = (randint(0, GRID_WIDTH - 1) * GRID_SIZE,
-                             randint(0, GRID_HEIGHT - 1) * GRID_SIZE)
-            if self.position not in occupied_positions:
-                break
+        super().randomize_position(positions)
 
     def draw(self):
         """Отрисовка яблока."""
         self.make_rect(position=self.position,
                        body_color=self.body_color)
+
+
+class Stone(GameObject):
+    """Объект камня, случайно расположенный на экране.
+
+    Класс реализует поведения препятствия в игре:
+    - При столкновении с камнем - сбросить змейку в исходное.
+    """
+
+    def __init__(self, body_color=GRAY):
+        super().__init__(body_color=body_color)
+        self.positions = [super().randomize_position()]
+
+    def draw(self):
+        """Отрисовка камня."""
+        for pos in self.positions:
+            self.make_rect(position=pos,
+                           body_color=self.body_color,
+                           border=GRAY)
+
+    # def add_new_stone(self, length):
+    #     """Добавляет новый камень на карту при выполнении условия."""
+    #     if length % 5 == 0:
+    #         self.positions.append(super().randomize_position)
 
 
 class Snake(GameObject):
@@ -163,6 +198,7 @@ class Snake(GameObject):
         directions = (UP, DOWN, LEFT, RIGHT)
         self.direction = choice(directions)
         self.last = None
+        screen.fill(BOARD_BACKGROUND_COLOR)
 
 
 def handle_keys(game_object):
@@ -194,7 +230,7 @@ def main():
     pg.init()
     snake = Snake()
     apple = Apple(positions=snake.positions)
-
+    stone = Stone()
     while True:
         clock.tick(SPEED)
         handle_keys(game_object=snake)
@@ -204,9 +240,12 @@ def main():
             snake.length += 1
         elif snake.get_head_position() in snake.positions[4:]:
             snake.reset()
-            screen.fill(BOARD_BACKGROUND_COLOR)
+        elif snake.get_head_position() in stone.positions:
+            snake.reset()
         apple.draw()
+        stone.draw()
         snake.draw()
+        draw_grid()
         pg.display.update()
 
 
