@@ -1,8 +1,8 @@
 """
-Модуль для реализации простого графического приложения.
+Модуль для реализации простого графического приложения - "Змейка".
 
 Этот модуль предоставляет функционал для создания базового графического
-интерфейса с использованием библиотеки Pygame, а также вспомогательные
+интерфейса змейки с использованием библиотеки Pygame, а также вспомогательные
 функции для работы со случайными числами.
 
 Доступные импортируемые объекты:
@@ -39,11 +39,17 @@ BORDER_COLOR = CYAN
 APPLE_COLOR = RED
 SNAKE_COLOR = GREEN
 SPEED = 20
+PAUSED = False
 screen = pg.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), 0, 32)
 
 pg.display.set_caption('Змейка')
 
 clock = pg.time.Clock()
+
+
+def draw_screen():
+    """Отрисовка экрана."""
+    screen.fill((0, 0, 0))
 
 
 def draw_grid(border=SLATEGRAY):
@@ -62,6 +68,39 @@ def draw_text(length):
     text_bg.fill((0, 0, 0, 128))
     text_bg.blit(text_surface, (5, 5))
     screen.blit(text_bg, (10, 10))
+    # if PAUSED:
+    #     pause_text = font.render("ПАУЗА", True, WHITE)
+    #     text_rect = pause_text.get_rect(center=(120, 40))
+    #     screen.blit(pause_text, text_rect)
+
+
+def call_once(func):
+    """Декоратор. Обеспечивает вызов функции единожды."""
+    called = False
+
+    def wrapper(*args, **kwargs):
+        nonlocal called
+        if not called:
+            called = True
+            return func(*args, **kwargs)
+    return wrapper
+
+
+def call_once_per_key(key_func):
+    """Декоратор. При срабатанывании условия вызывает раз в цикле функцию."""
+    called_keys = set()
+
+    def decorator(func):
+        def wrapper(*args, **kwargs):
+            key = key_func(*args, **kwargs)
+            if key not in called_keys:
+                called_keys.add(key)
+                return func(*args, **kwargs)
+            return None
+        wrapper.reset = lambda: called_keys.clear()
+        return wrapper
+    return decorator
+
 
 class GameObject:
     """Родительский класс, определяющий основные характеристики объектов."""
@@ -135,7 +174,7 @@ class Stone(GameObject):
 
     def __init__(self, body_color=GRAY):
         super().__init__(body_color=body_color)
-        self.positions = [super().randomize_position()]
+        self.positions = [(-20, -20)]
 
     def draw(self):
         """Отрисовка камня."""
@@ -144,10 +183,11 @@ class Stone(GameObject):
                            body_color=self.body_color,
                            border=GRAY)
 
-    # def add_new_stone(self, length):
-    #     """Добавляет новый камень на карту при выполнении условия."""
-    #     if length % 5 == 0:
-    #         self.positions.append(super().randomize_position)
+    @call_once_per_key(lambda self, length: length // 5)
+    def add_new_stone(self, length):
+        """Добавляет новый камень на карту при выполнении условия."""
+        if length % 5 == 0:
+            self.positions.append(super().randomize_position())
 
 
 class Snake(GameObject):
@@ -216,6 +256,7 @@ def handle_keys(game_object):
     значения в соответсвующую переменную.
     """
     for event in pg.event.get():
+        global PAUSED
         if event.type == pg.QUIT:
             pg.quit()
             sys.exit()
@@ -231,6 +272,8 @@ def handle_keys(game_object):
             elif event.key == pg.K_ESCAPE:
                 pg.quit()
                 sys.exit()
+            elif event.key == pg.K_SPACE:
+                PAUSED = not PAUSED
 
 
 def main():
@@ -243,20 +286,27 @@ def main():
     stone = Stone()
     while True:
         clock.tick(SPEED)
+        # draw_screen()
         handle_keys(game_object=snake)
-        snake.move()
+        if not PAUSED:
+            snake.move()
         if apple.position == snake.get_head_position():
-            apple.randomize_position(snake.positions)
+            apple.randomize_position(snake.positions + stone.positions
+                                     + [CENTER_POSTITON])
             snake.length += 1
         elif snake.get_head_position() in snake.positions[4:]:
             snake.reset()
         elif snake.get_head_position() in stone.positions:
+            stone.positions = [stone.positions[0]]
+            stone.add_new_stone.reset()
             snake.reset()
         apple.draw()
         stone.draw()
         snake.draw()
         draw_grid()
         draw_text(snake.length)
+        if snake.length % 5 == 0:
+            stone.add_new_stone(snake.length)
         pg.display.update()
 
 
