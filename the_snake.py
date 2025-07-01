@@ -38,7 +38,7 @@ BOARD_BACKGROUND_COLOR = BLACK
 BORDER_COLOR = CYAN
 APPLE_COLOR = RED
 SNAKE_COLOR = GREEN
-SPEED = 20
+SPEED = 15
 PAUSED = False
 screen = pg.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), 0, 32)
 
@@ -64,14 +64,13 @@ def draw_text(length):
     """Отрисовка текста."""
     font = pg.font.SysFont('Arial', 20)
     text_surface = font.render(f'Счет: {length}', True, WHITE)
-    text_bg = pg.Surface((75, 25), pg.SRCALPHA)
-    text_bg.fill((0, 0, 0, 128))
+    text_bg = pg.Surface((75, 70), pg.SRCALPHA)
+    text_bg.fill((0, 0, 0, 60))
     text_bg.blit(text_surface, (5, 5))
+    if PAUSED:
+        pause_text = font.render("ПАУЗА", True, WHITE)
+        text_bg.blit(pause_text, (10, 40))
     screen.blit(text_bg, (10, 10))
-    # if PAUSED:
-    #     pause_text = font.render("ПАУЗА", True, WHITE)
-    #     text_rect = pause_text.get_rect(center=(120, 40))
-    #     screen.blit(pause_text, text_rect)
 
 
 def call_once(func):
